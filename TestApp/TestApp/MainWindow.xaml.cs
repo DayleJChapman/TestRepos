@@ -22,11 +22,12 @@ namespace TestApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        
+        List<Deck> playerDecks;
         public MainWindow()
         {
             InitializeComponent();
-            var dir = "D:\\MtG Arena\\MTGArena\\MTGA_Data\\Logs\\Logs\\";
+            playerDecks = new List<Deck>();
+            var dir = "S:\\AVAC\\Arena\\MTGArena\\MTGA_Data\\Logs\\Logs\\";
             var directory = new DirectoryInfo(dir);
             var myFile = (from f in directory.GetFiles()
                           orderby f.LastWriteTime descending
@@ -44,10 +45,25 @@ namespace TestApp
                     break;
                 }
             }
-            Console.Out.WriteLine(deckIDLine);
-            string[] split = deckIDLine.Split(new string[]{"Deck.GetDeckListsV3 "},StringSplitOptions.None);
-            Console.Out.WriteLine(split[1]);
+            // Console.Out.WriteLine(deckIDLine);
+            string[] split = deckIDLine.Split(new string[] { "\"payload\":[" }, StringSplitOptions.None);
+            split[1] = split[1].Substring(0, split[1].Length - 2);
+            //Console.Out.WriteLine(split[1]);
+            string[] deckjsons = split[1].Split(new string[] { "{\"commandZoneGRPIds\"" }, StringSplitOptions.None);
+
+            for (int i = 1; i < deckjsons.Length; i++)
+            {
+                Console.Out.WriteLine("{\"commandZoneGRPIds\"" + deckjsons[i]);
+                if (deckjsons[i].Substring(deckjsons[i].Length - 1) == ",")
+                {
+                    deckjsons[i] = deckjsons[i].Substring(0, deckjsons[i].Length - 1);
+                }
+                playerDecks.Add(DecklistsProcessr.generateDeckCode("{\"commandZoneGRPIds\"" + deckjsons[i]));
+            }
+            foreach (Deck d in playerDecks)
+            {
+                Console.Out.WriteLine("DeckCode: " + d.id);
+            }
         }
-    
     }
 }
